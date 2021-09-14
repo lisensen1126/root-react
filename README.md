@@ -1,70 +1,91 @@
-# Getting Started with Create React App
+# 前端微服务及框架qiankun技术分享
+[++官网入口++](https://qiankun.umijs.org/zh/guide)    [++github入口++](https://github.com/umijs/qiankun)
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+#### 1. What  什么是微前端
+> 微前端是一种多个团队通过独立发布功能的方式来共同构建现代化 web 应用的技术手段及方法策略。微前端架构旨在解决单体应用在一个相对长的时间跨度下，由于参与的人员、团队的增多、变迁，从一个普通应用演变成一个巨石应用后，随之而来的应用不可维护的问题。这类问题在企业级 Web 应用中尤其常见。
 
-## Available Scripts
 
-In the project directory, you can run:
 
-### `yarn start`
+#### 2.Why 为什么需要微前端
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+  - 两个场景,大家思考一下
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+  > 1. 你新入职一家公司，老板扔给你一个 5 年陈的项目，需要你在这个项目上持续迭代加功能。
 
-### `yarn test`
+  > 2. 你们起了一个新项目，老板看惯了前端的风起云涌技术更迭，只给了架构上一个要求："如何确保这套技术方案在 3~5 年内还葆有生命力，不会在 3、5 年后变成又一个遗产项目？"
+#### 3. Why  为什么是qiankun
+  > 目前较常用的微前端框架有single-spa、飞冰、qiankun等。热度最高的qiankun也是在single-spa的基础上进行二次封装,qiankun 是一个生产可用的微前端框架，它基于 single-spa，具备 js 沙箱、样式隔离、HTML Loader、预加载 等微前端系统所需的能力。qiankun 可以用于任意 js 框架，微应用接入像嵌入一个 iframe 系统一样简单。
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+> single-spa的架构无法实现样式隔离，只能在每一个微服务中手动添加一个根标识，并将所有的样式放在这个标识下。也无法实现一个页面集成多个微服务。
+- 技术栈无关(**微前端的核心价值**)
+  ```
+  任意技术栈的应用均可 使用/接入，不论是 React/Vue/Angular/JQuery 还是其他等框架。
+  ```
+- 独立开发、独立部署
+  ```
+  微服务子应用支持独立启动调试,独立部署
+  ```
+- 增量开发
+  ```
+  可以方便的新增一个微服务当做一个子业务
+  ```
+- 样式隔离
+  ```
+  确保微应用之间样式互相不干扰。
+  ```
+- JS沙箱
+  ```
+  确保微应用之间 全局变量/事件 不冲突。
+  ```
+- 资源预加载
+  ```
+  在浏览器空闲时间预加载未打开的微应用资源，加速微应用打开速度。
+  ```
 
-### `yarn build`
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+#### 4. How  如何使用qiankun
+  > SPA的微服务框架都是需要一个基座,这个基座我把它比做插排，子业务我把它比作插头,这个基座控制着路由匹配规则，路由发生变化时，基座可以知道应该去加载哪个插头，当路由离开时，基座会拔掉该插头，可以很方便的加载卸载。
+  > qiankun还提供了一个很好的API,手动加载微服务(下边会详细介绍)
+ 1. 初始化一个基座项目，我用react项目脚手架**create-react-app**来创建(先全局安装create-react-app)
+  ```
+    create-react-app your-app 注意命名方式
+   ```
+  - 再初始化一个react子应用(child-react)
+  - 使用vue-cli创建一个vue子应用(child-vue)
+2. 安装qiankun   
+```
+yarn add qiankun 或 npm i qiankun -S
+```
+3. 在主应用中注册微应用(具体看代码演示)
+4. 如何手动加载一个微服务及传参(具体看代码演示)
+5. 微服务子应用间通信(具体看代码演示)
+6. [基座主应用github地址](https://github.com/lisensen1126/root-react) [vue子应用](https://github.com/lisensen1126/child-vue)  [react子应用](https://github.com/lisensen1126/child-react)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+#### 存在的问题及在项目中的解决方案
+> 比如我们在某一个微服务中使用UI框架Antd或者Element ui的弹窗组件，会渲染节点到ducument.body，此时，UI框架的弹窗样式会丢失，需要我们在使用的时候将该弹窗挂载到对应的节点中。
+###### 解决方法:
+1. 尽可能的不要把一些节点插到body里
+2. 在主应用里进行样式设置
 
-### `yarn eject`
+> 如果我们使用了不通的前端js框架，再使用对应的UI框架，比如vue使用了element-ui,React使用了Antd,在项目里就会造成视觉上的差异,
+###### 解决方法:
+1. 不使用ui框架，提前约定好样式风格,缺点:开发效率低,不同成员写出来的样式风格存在差异
+2. 微服务尽量使用同一个ui框架，意思就是微服务子应用都使用一个js框架。
+3. element-ui推出了自己的react ui库  [element-react](https://elemefe.github.io/element-react/#/zh-CN/quick-start),antd也推出了自己的vue版本 [Ant Design of Vue](https://www.antdv.com/docs/vue/introduce-cn/)
+4. coding项目是统一使用react js框架,自己写了一套ui框架。
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+> 公共组件需要封装2次，比如针对loading弹窗，我们可能需要封装一个react版本的loading弹窗动画和一个vue版本的来保持loading视觉效果一致
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+> 一些公共方法无法引入，比如,A应用里有一个权限校验的方法,B应用里没办法通过import方式等方便引入
+###### 解决方法:
+1. 将一些公共方法放在主应用中,注册时通过props传递,或者放在qiankun提供的状态管理中。
+2. coding采用的是将公共方法封装然后发布一个npm包，然后在各个子应用中去安装引入使用
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+> 无法方便使用第三方插件，比如vuex、redux来做组件的状态管理工具,乾坤自带的全局组件状态管理不如vuex等使用方便
+###### 解决方法:
+在主应用通过qiankun提供的api来进行初始化状态,子应用进入的时候可以从props中读取出状态，然后在子应用中使用vuex或者redux进行存储是最为便捷的。
+> 在微服务中,通过手动添加其他子应用，样式会造成污染
+###### 解决方法:
+1. 尽可能减少微服务之间相互嵌套，如果两个微服务数据交互较多,业务关联性强，建议合并为一个微服务，因为微服务就是按照业务需求来进行分割的
+2. 如果发生嵌套，样式被污染了，就需要手动来进行覆盖，消除影响(大家可以发挥下想象，看有没有其它方法可以方便的进行解决.)
